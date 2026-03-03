@@ -51,14 +51,43 @@ def rawimage():
 
     return Response(response=response_pickled, status=200, mimetype="application/json")
 
+
 @app.route('/api/dotproduct', methods=['POST'])
 def dotproduct():
-    pass
+    try:
+        data = request.get_json()
+        a = data.get('a', [])
+        b = data.get('b', [])
+        if len(a) != len(b):
+            raise ValueError("vectors differ in length")
+        dot = sum(float(x)*float(y) for x,y in zip(a,b))
+        response = {'dotproduct': dot}
+    except Exception as e:
+        response = {'dotproduct': 0}
+    return Response(response=jsonpickle.encode(response), status=200, mimetype="application/json")
+
+
 
 # route http posts to this method
 @app.route('/api/jsonimage', methods=['POST'])
 def jsonimage():
-    pass
+    r = request
+    # convert the data to a PIL image type so we can extract dimensions
+    try:
+        ioBuffer = io.BytesIO(r.data)
+        img = Image.open(ioBuffer)
+    # build a response dict to send back to client
+        response = {
+            'width' : img.size[0],
+            'height' : img.size[1]
+            }
+    except:
+        response = { 'width' : 0, 'height' : 0}
+    # encode response using jsonpickle
+    response_pickled = jsonpickle.encode(response)
+
+    return Response(response=response_pickled, status=200, mimetype="application/json")
+
 
 # start flask app
-app.run(host="0.0.0.0", port=5000)
+app.run(host="0.0.0.0", port=5001)

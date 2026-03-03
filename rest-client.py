@@ -25,16 +25,26 @@ def doAdd(addr, debug=False):
     # send http request with image and receive response
     add_url = addr + "/api/add/5/10"
     response = requests.post(add_url, headers=headers)
+    #print(response.text)
     if debug:
         # decode response
         print("Response is", response)
         print(json.loads(response.text))
 
 def doDotProduct(addr, debug=False):
-    pass
+    headers = {'content-type': 'application/json'}
+    a = [random.random() for _ in range(100)]
+    b = [random.random() for _ in range(100)]
+    resp = requests.post(addr + '/api/dotproduct', json={'a': a, 'b': b}, headers=headers)
+    if debug:
+        print(resp.text)
 
 def doJsonImage(addr, debug=False):
-    pass
+    headers = {'content-type': 'application/json'}
+    img_b64 = base64.b64encode(open('Flatirons_Winter_Sunrise_edit_2.jpg','rb').read()).decode()
+    resp = requests.post(addr + '/api/jsonimage', json={'image': img_b64}, headers=headers)
+    if debug:
+        print(resp.text)
 
 if len(sys.argv) < 3:
     print(f"Usage: {sys.argv[0]} <server ip> <cmd> <reps>")
@@ -45,7 +55,7 @@ host = sys.argv[1]
 cmd = sys.argv[2]
 reps = int(sys.argv[3])
 
-addr = f"http://{host}:5000"
+addr = f"http://{host}:5001"
 print(f"Running {reps} reps against {addr}")
 
 if cmd == 'rawImage':
@@ -63,14 +73,15 @@ elif cmd == 'add':
 elif cmd == 'jsonImage':
     start = time.perf_counter()
     for x in range(reps):
-        doJsonImage(addr, debug=True)
+        doJsonImage(addr, debug=False)
     delta = ((time.perf_counter() - start)/reps)*1000
     print("Took", delta, "ms per operation")
 elif cmd == 'dotProduct':
     start = time.perf_counter()
     for x in range(reps):
-        doDotProduct(addr, debug=True)
+        doDotProduct(addr, debug=False)
     delta = ((time.perf_counter() - start)/reps)*1000
     print("Took", delta, "ms per operation")
 else:
     print("Unknown option", cmd)
+
